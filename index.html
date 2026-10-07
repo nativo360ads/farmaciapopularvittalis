@@ -359,11 +359,32 @@
       <div class="space-y-2">
         <input type="text" id="buyer-name" placeholder="Seu Nome Completo" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:border-red-600">
         <input type="text" id="buyer-address" placeholder="Endereço de Entrega (Bairro, Rua, Nº)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:border-red-600">
-        <select id="buyer-payment" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:border-red-600">
+        <select id="buyer-payment" onchange="handlePaymentChange(this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:border-red-600">
           <option value="PIX">Pagamento via PIX (Chave imediata)</option>
           <option value="Cartão de Crédito/Débito">Cartão de Crédito/Débito (Levamos a Maquininha)</option>
           <option value="Dinheiro">Dinheiro no Ato da Entrega</option>
         </select>
+
+        <!-- Campo Dinâmico de Troco para Pagamento em Dinheiro -->
+        <div id="change-section" class="hidden bg-amber-50 border border-amber-200 rounded-lg p-2.5 space-y-2 text-xs">
+          <div class="flex items-center justify-between text-slate-700">
+            <span class="font-bold flex items-center gap-1">💵 Precisa de troco?</span>
+            <div class="flex items-center gap-3">
+              <label class="flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                <input type="radio" name="need-change" value="nao" checked onchange="toggleChangeInput(false)" class="accent-red-600">
+                <span>Não</span>
+              </label>
+              <label class="flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                <input type="radio" name="need-change" value="sim" onchange="toggleChangeInput(true)" class="accent-red-600">
+                <span>Sim</span>
+              </label>
+            </div>
+          </div>
+          <div id="change-input-box" class="hidden pt-1">
+            <label class="text-[11px] text-slate-600 font-medium block mb-1">Troco para quanto?</label>
+            <input type="text" id="change-value" placeholder="Ex: R$ 50,00 ou R$ 100,00" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-none focus:border-red-600">
+          </div>
+        </div>
       </div>
 
       <!-- Totais -->
@@ -479,7 +500,7 @@
     // ==============================================
     // CONFIGURAÇÃO OFICIAL DA PLANILHA GOOGLE VITTALIS
     // ==============================================
-    const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTGjW6irzo4AtSKIGSDRJ4bIOedq1ChoFhHDZ8DhVbrRPlpISmMunG6n9xm1q-aTxNQXTiCk9K6MIvL/pub?output=csv";
+    const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR00o-YZ1ug62utcKoooD7NyBx-urpCDREyIq4A8exWL1An4i7ZXXhV1HMLgY5_Ig/pub?output=csv";
 
     // CATÁLOGO COMPLETO DE SEGURANÇA (30 ITENS OFICIAIS)
     const DEFAULT_CATALOG = [
@@ -613,7 +634,7 @@
               <div class="text-base font-black text-slate-900 leading-tight">
                 R$ ${p.price.toFixed(2).replace('.', ',')}
               </div>
-              <span class="text-[9px] text-emerald-600 font-semibold block">à vista no PIX</span>
+              <span class="text-[9px] text-emerald-600 font-semibold block">no PIX ou Cartão</span>
             </div>
 
             <button onclick="addToCart(${p.id})" class="w-full bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-xs py-2 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5">
@@ -802,6 +823,39 @@
     }
 
     // CHECKOUT WHATSAPP
+    
+    // GERENCIAMENTO DE FORMA DE PAGAMENTO E TROCO
+    function handlePaymentChange(val) {
+      const changeSec = document.getElementById('change-section');
+      if (!changeSec) return;
+      if (val === 'Dinheiro') {
+        changeSec.classList.remove('hidden');
+        changeSec.style.display = 'block';
+      } else {
+        changeSec.classList.add('hidden');
+        changeSec.style.display = 'none';
+        const radioNo = document.querySelector('input[name="need-change"][value="nao"]');
+        if (radioNo) radioNo.checked = true;
+        toggleChangeInput(false);
+      }
+    }
+
+    function toggleChangeInput(needChange) {
+      const box = document.getElementById('change-input-box');
+      if (!box) return;
+      if (needChange) {
+        box.classList.remove('hidden');
+        box.style.display = 'block';
+        const inputVal = document.getElementById('change-value');
+        if (inputVal) inputVal.focus();
+      } else {
+        box.classList.add('hidden');
+        box.style.display = 'none';
+        const inputVal = document.getElementById('change-value');
+        if (inputVal) inputVal.value = '';
+      }
+    }
+
     function finishWhatsAppOrder() {
       if (cart.length === 0) {
         alert("Seu carrinho está vazio!");
@@ -829,7 +883,17 @@
       msg += `*Dados do Cliente:*\n`;
       msg += `• *Nome:* ${name}\n`;
       msg += `• *Endereço:* ${addr}\n`;
-      msg += `• *Forma de Pagamento:* ${pay}\n`;
+      let changeMsg = "";
+      if (pay === 'Dinheiro') {
+        const needChange = document.querySelector('input[name="need-change"]:checked')?.value;
+        if (needChange === 'sim') {
+          const changeVal = document.getElementById('change-value')?.value.trim() || 'A combinar';
+          changeMsg = `\n• *Troco:* Sim, levar troco para ${changeVal}`;
+        } else {
+          changeMsg = `\n• *Troco:* Não precisa de troco (valor exato)`;
+        }
+      }
+      msg += `• *Forma de Pagamento:* ${pay}${changeMsg}\n`;
 
       const encoded = encodeURIComponent(msg);
       window.open(`https://wa.me/5598981809161?text=${encoded}`, '_blank');
