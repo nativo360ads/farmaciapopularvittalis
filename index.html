@@ -968,7 +968,8 @@
             // Valida se é um link web válido ou arquivo de imagem com extensão
             const isValidPhoto = cleanPhoto && (
               cleanPhoto.startsWith('http://') || 
-              cleanPhoto.startsWith('https://') || 
+              cleanPhoto.startsWith('https://') ||
+              cleanPhoto.startsWith('data:image') || 
               /\.(jpg|jpeg|png|webp|svg|gif)($|\?)/i.test(cleanPhoto)
             );
 
