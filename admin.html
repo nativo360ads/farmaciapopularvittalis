@@ -4,7 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Administrativo — Farmácia Popular Vittalis</title>
-  <link rel="icon" type="image/png" href="logo_vittalis_oficial.png">
+    <link rel="icon" type="image/png" href="icon-admin-192.png">
+  <!-- PWA Manifest & Suporte Mobile do Admin -->
+  <link rel="manifest" href="manifest-admin.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Admin Vittalis">
+  <link rel="apple-touch-icon" href="apple-touch-icon-admin.png">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Inter & Outfit -->
@@ -1071,7 +1078,46 @@ function doPost(e) {
       }
     }
 
-    document.addEventListener("DOMContentLoaded", checkAuth);
+    document.addEventListener("DOMContentLoaded", () => {
+      checkAuth();
+      // Auto-sincronizar quando a janela ganhar foco ou a cada 30 segundos
+      window.addEventListener("focus", () => {
+        if (localStorage.getItem('vittalis_admin_auth') === 'true') syncCatalogFromSheet(false);
+      });
+      setInterval(() => {
+        if (localStorage.getItem('vittalis_admin_auth') === 'true') syncCatalogFromSheet(false);
+      }, 30000);
+    });
   </script>
+
+  <!-- PWA Admin Install Logic -->
+  <script>
+    let deferredAdminPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredAdminPrompt = e;
+      const btn = document.getElementById('admin-pwa-btn');
+      if (btn) btn.classList.remove('hidden');
+    });
+
+    function installAdminPWA() {
+      if (deferredAdminPrompt) {
+        deferredAdminPrompt.prompt();
+        deferredAdminPrompt.userChoice.then(() => {
+          deferredAdminPrompt = null;
+          document.getElementById('admin-pwa-btn')?.classList.add('hidden');
+        });
+      } else {
+        alert("Para instalar o Painel Admin no celular:\n1. Abra no Chrome ou Safari do celular\n2. Toque em Opções (3 pontinhos ou Compartilhar)\n3. Selecione 'Instalar aplicativo' ou 'Adicionar à Tela de Início' 📲");
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Admin err:', err));
+      });
+    }
+  </script>
+
 </body>
 </html>

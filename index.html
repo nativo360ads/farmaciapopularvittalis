@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="logo_vittalis_oficial.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
+  <!-- PWA Manifest & Suporte Mobile -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#dc2626">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Vittalis">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title>Farmácia Popular Vittalis | Entrega Rápida e Preço Popular em São Luís</title>
   
   <!-- Tailwind CSS & Fontes -->
@@ -1078,6 +1085,64 @@
     renderShelf();
     updateCart();
     syncCatalogFromGoogleSheets();
+  </script>
+
+
+  <!-- Banner / Botão Flutuante de Instalação do App PWA -->
+  <div id="pwa-install-banner" class="hidden fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 z-50 bg-slate-900/95 backdrop-blur-md text-white p-3.5 rounded-2xl shadow-2xl border border-red-500/30 flex items-center justify-between gap-3 max-w-md animate-bounce-once">
+    <div class="flex items-center gap-3">
+      <img src="icon-192.png" alt="App Vittalis" class="w-10 h-10 rounded-xl shadow-md border border-white/20">
+      <div>
+        <h5 class="font-bold text-xs leading-tight">Instalar Aplicativo Vittalis</h5>
+        <p class="text-[10px] text-slate-300">Acesse direto da sua tela inicial</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <button onclick="installPWA()" class="bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-xs px-3 py-1.5 rounded-xl shadow-sm transition-all flex items-center gap-1">
+        <span>Instalar</span>
+      </button>
+      <button onclick="dismissInstallBanner()" class="text-slate-400 hover:text-white p-1 text-sm">✕</button>
+    </div>
+  </div>
+
+
+  <!-- PWA Service Worker & Install Logic -->
+  <script>
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner && !sessionStorage.getItem('pwa_dismissed')) {
+        banner.classList.remove('hidden');
+      }
+    });
+
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('Cliente aceitou instalar o App');
+          }
+          deferredPrompt = null;
+          document.getElementById('pwa-install-banner')?.classList.add('hidden');
+        });
+      } else {
+        alert("Para instalar no seu celular:\n1. Abra este site no navegador do celular (Chrome ou Safari)\n2. Toque nos 3 pontinhos (ou Compartilhar no iPhone)\n3. Selecione 'Instalar aplicativo' ou 'Adicionar à Tela de Início' 📲");
+      }
+    }
+
+    function dismissInstallBanner() {
+      document.getElementById('pwa-install-banner')?.classList.add('hidden');
+      sessionStorage.setItem('pwa_dismissed', 'true');
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg error:', err));
+      });
+    }
   </script>
 
 </body>
