@@ -45,8 +45,8 @@
         <span class="hidden lg:inline text-white/40">|</span>
         <a href="#receitas" class="hidden lg:inline hover:text-yellow-300 transition-colors">Envie sua Receita Médica</a>
         <span>|</span>
-        <a href="https://wa.me/5598981443400" target="_blank" class="hover:text-yellow-300 flex items-center gap-1 font-bold">
-          <span>💬</span> WhatsApp: (98) 98144-3400
+        <a href="https://wa.me/5598981809161" target="_blank" class="hover:text-yellow-300 flex items-center gap-1 font-bold">
+          <span>💬</span> WhatsApp: (98) 98180-9161
         </a>
       </div>
     </div>
@@ -96,7 +96,7 @@
 
       <!-- Ações do Cabeçalho: Fale Conosco + Carrinho -->
       <div class="flex items-center gap-3 shrink-0">
-        <a href="https://wa.me/5598981443400" target="_blank" class="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 transition-all">
+        <a href="https://wa.me/5598981809161" target="_blank" class="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 transition-all">
           <span class="text-lg">💬</span>
           <span class="leading-tight text-left">
             <span class="text-[10px] text-slate-400 block font-normal">Tire dúvidas</span>
@@ -283,14 +283,14 @@
         </div>
         <h3 class="text-2xl font-black text-slate-900 font-brand italic">Precisa de Medicamentos com Receita Médica?</h3>
         <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
-          Em conformidade com a Anvisa, medicamentos sob prescrição (tarja vermelha e preta, antibióticos e controlados) exigem retenção ou conferência da receita médica. Envie a foto da sua receita no nosso WhatsApp oficial <strong>(98) 98144-3400</strong> para triagem farmacêutica imediata com a <strong>Dra. Kássia Pinho</strong> e entrega ágil pelo motoboy.
+          Em conformidade com a Anvisa, medicamentos sob prescrição (tarja vermelha e preta, antibióticos e controlados) exigem retenção ou conferência da receita médica. Envie a foto da sua receita no nosso WhatsApp oficial <strong>(98) 98180-9161</strong> para triagem farmacêutica imediata com a <strong>Dra. Kássia Pinho</strong> e entrega ágil pelo motoboy.
         </p>
       </div>
 
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
         <input type="text" id="rx-patient-name" placeholder="Seu Nome Completo" class="bg-white border border-red-300 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500">
         <button onclick="sendPrescription()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all">
-          <span>📸</span> Enviar Foto da Receita no WhatsApp: (98) 98144-3400
+          <span>📸</span> Enviar Foto da Receita no WhatsApp: (98) 98180-9161
         </button>
       </div>
     </section>
@@ -397,7 +397,7 @@
       <div class="space-y-2">
         <h5 class="text-white font-bold text-xs uppercase tracking-wider">Atendimento & Horários</h5>
         <ul class="space-y-1.5 text-[11px]">
-          <li><a href="https://wa.me/5598981443400" class="hover:text-yellow-300 font-bold text-emerald-400">WhatsApp: (98) 98144-3400</a></li>
+          <li><a href="https://wa.me/5598981809161" class="hover:text-yellow-300 font-bold text-emerald-400">WhatsApp: (98) 98180-9161</a></li>
           <li><span>E-mail: Kassiapinho918@gmail.com</span></li>
           <li class="pt-1"><strong class="text-white">Horário Oficial do CRF:</strong></li>
           <li><span>Segunda a Sábado: 08:00 às 21:00</span></li>
@@ -489,7 +489,14 @@
       { id: 30, name: "Escova Dental Macia Leve 3 Pague 2", category: "Higiene e Cuidados", price: 12.90, oldPrice: 16.90, desc: "Cerdas ultrafinas para limpeza profunda e gengiva saudável.", icon: "🪥", photo: null, highlight: false }
     ];
 
-    let CATALOG = [...DEFAULT_CATALOG];
+    // Carrega instantaneamente o último catálogo salvo para não exibir versão antiga ao abrir nova aba
+    let storedCatalog = null;
+    try {
+      const rawStored = localStorage.getItem('vittalis_live_catalog');
+      if (rawStored) storedCatalog = JSON.parse(rawStored);
+    } catch(e) {}
+
+    let CATALOG = (storedCatalog && storedCatalog.length > 0) ? storedCatalog : [...DEFAULT_CATALOG];
 
     let currentDept = 'todos';
     let searchQuery = '';
@@ -751,7 +758,7 @@
       msg += `• *Forma de Pagamento:* ${pay}\n`;
 
       const encoded = encodeURIComponent(msg);
-      window.open(`https://wa.me/5598981443400?text=${encoded}`, '_blank');
+      window.open(`https://wa.me/5598981809161?text=${encoded}`, '_blank');
     }
 
     // ENVIO DE RECEITA MÉDICA
@@ -763,7 +770,7 @@
       msg += `Estou enviando a foto da receita médica a seguir aqui nesta conversa.`;
 
       const encoded = encodeURIComponent(msg);
-      window.open(`https://wa.me/5598981443400?text=${encoded}`, '_blank');
+      window.open(`https://wa.me/5598981809161?text=${encoded}`, '_blank');
     }
 
     function scrollToReceitas() {
@@ -786,7 +793,13 @@
 
       try {
         const cacheBuster = `&_t=${Date.now()}`;
-        const response = await fetch(GOOGLE_SHEETS_CSV_URL + cacheBuster);
+        const response = await fetch(GOOGLE_SHEETS_CSV_URL + cacheBuster, {
+          cache: 'no-store',
+          headers: {
+            'Pragma': 'no-cache',
+            'Cache-Control': 'no-cache'
+          }
+        });
         if (!response.ok) throw new Error("Erro de rede: " + response.status);
         const text = await response.text();
 
@@ -900,6 +913,9 @@
 
           if (newCatalog.length > 0) {
             CATALOG = newCatalog;
+            try {
+              localStorage.setItem('vittalis_live_catalog', JSON.stringify(newCatalog));
+            } catch(e) {}
             if (statusEl) statusEl.innerText = `Ao Vivo: ${newCatalog.length} produtos`;
             renderShelf();
             if (forceAlert) {
@@ -927,3 +943,4 @@
 
 </body>
 </html>
+
