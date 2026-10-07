@@ -550,8 +550,17 @@
             </div>
 
             <!-- Imagem / Ícone do Produto -->
-            <div class="h-32 bg-slate-50 group-hover:bg-red-50/30 rounded-xl flex items-center justify-center text-4xl transition-colors border border-slate-100 overflow-hidden">
-              ${p.photo ? `<img src="${p.photo}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">` : `<span class="group-hover:scale-110 transition-transform">${p.icon}</span>`}
+            <div class="h-32 bg-slate-50 group-hover:bg-red-50/30 rounded-xl flex items-center justify-center text-4xl transition-colors border border-slate-100 overflow-hidden relative">
+              ${p.photo ? `
+                <img src="${p.photo}" alt="${p.name}" 
+                  onerror="this.onerror=null; this.style.display='none'; this.parentElement.querySelector('.fallback-icon').style.display='flex';" 
+                  class="w-full h-full object-contain p-1.5 group-hover:scale-105 transition-transform">
+                <div class="fallback-icon hidden w-full h-full items-center justify-center">
+                  <span class="group-hover:scale-110 transition-transform">${p.icon}</span>
+                </div>
+              ` : `
+                <span class="group-hover:scale-110 transition-transform">${p.icon}</span>
+              `}
             </div>
 
             <!-- Dados Textuais -->
@@ -856,6 +865,26 @@
             if (isNaN(price) || price <= 0) continue;
             const oldPrice = parseFloat(rawOldPrice);
 
+            let cleanPhoto = photo ? photo.trim() : '';
+
+            // Se for link de busca do Google Imagens (google.com/imgres), extrai o link direto da imagem automaticamente!
+            if (cleanPhoto.includes('google.com/imgres') && cleanPhoto.includes('imgurl=')) {
+              try {
+                const parsedUrl = new URL(cleanPhoto);
+                const extractedImg = parsedUrl.searchParams.get('imgurl');
+                if (extractedImg) {
+                  cleanPhoto = decodeURIComponent(extractedImg);
+                }
+              } catch (e) {}
+            }
+
+            // Valida se é um link web válido ou arquivo de imagem com extensão
+            const isValidPhoto = cleanPhoto && (
+              cleanPhoto.startsWith('http://') || 
+              cleanPhoto.startsWith('https://') || 
+              /\.(jpg|jpeg|png|webp|svg|gif)($|\?)/i.test(cleanPhoto)
+            );
+
             newCatalog.push({
               id: i,
               name,
@@ -863,7 +892,7 @@
               category,
               price,
               oldPrice: (!isNaN(oldPrice) && oldPrice > price) ? oldPrice : null,
-              photo: photo && photo.trim() ? photo.trim() : null,
+              photo: isValidPhoto ? cleanPhoto : null,
               icon: iconMap[category] || '📦',
               highlight: destaque
             });
