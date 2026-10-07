@@ -549,12 +549,12 @@
               ${p.highlight ? `<span class="bg-yellow-400 text-slate-950 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase">Destaque</span>` : `<span></span>`}
             </div>
 
-            <!-- Imagem / Ícone do Produto -->
-            <div class="h-32 bg-slate-50 group-hover:bg-red-50/30 rounded-xl flex items-center justify-center text-4xl transition-colors border border-slate-100 overflow-hidden relative">
+            <!-- Imagem / Ícone do Produto (Estilo Drogaria SP Enquadramento Perfeito) -->
+            <div class="h-36 bg-white rounded-xl flex items-center justify-center text-4xl transition-colors border border-slate-100 overflow-hidden relative p-1.5">
               ${p.photo ? `
                 <img src="${p.photo}" alt="${p.name}" 
                   onerror="this.onerror=null; this.style.display='none'; this.parentElement.querySelector('.fallback-icon').style.display='flex';" 
-                  class="w-full h-full object-contain p-1.5 group-hover:scale-105 transition-transform">
+                  class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform">
                 <div class="fallback-icon hidden w-full h-full items-center justify-center">
                   <span class="group-hover:scale-110 transition-transform">${p.icon}</span>
                 </div>
