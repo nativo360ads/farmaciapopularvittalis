@@ -158,23 +158,23 @@
         <button onclick="filterDept('ofertas')" class="dept-btn px-3 py-2 rounded-lg text-amber-700 bg-amber-50 hover:bg-amber-100 font-bold flex items-center gap-1.5 whitespace-nowrap border border-amber-200">
           <span>🔥</span> Ofertas da Semana
         </button>
+        <button onclick="filterDept('Infantil')" class="dept-btn px-3 py-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-50 whitespace-nowrap">
+          👶 Fraldas & Infantil
+        </button>
+        <button onclick="filterDept('Cuidados Pessoais')" class="dept-btn px-3 py-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-50 whitespace-nowrap">
+          🧓 Cuidados Pessoais & Fraldas Geriátricas
+        </button>
         <button onclick="filterDept('Medicamentos')" class="dept-btn px-3 py-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-50 whitespace-nowrap">
-          Medicamentos MIP
+          💊 Medicamentos
         </button>
         <button onclick="filterDept('Suplementos')" class="dept-btn px-3 py-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-50 whitespace-nowrap">
-          Suplementos & Vitaminas
-        </button>
-        <button onclick="filterDept('Higiene e Cuidados')" class="dept-btn px-3 py-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-50 whitespace-nowrap">
-          Higiene & Dermocosméticos
-        </button>
-        <button onclick="filterDept('Infantil')" class="dept-btn px-3 py-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-50 whitespace-nowrap">
-          Mamãe & Bebê
+          ✨ Vitaminas & Suplementos
         </button>
         <button onclick="filterDept('Primeiros Socorros')" class="dept-btn px-3 py-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-50 whitespace-nowrap">
-          Primeiros Socorros
+          🩹 Primeiros Socorros
         </button>
-        <button onclick="filterDept('Equipamentos')" class="dept-btn px-3 py-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-50 whitespace-nowrap">
-          Aparelhos & Saúde
+        <button onclick="filterDept('Dermocosméticos')" class="dept-btn px-3 py-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-slate-50 whitespace-nowrap">
+          🧴 Dermo & Aparelhos
         </button>
         <button onclick="scrollToReceitas()" class="ml-auto px-3 py-2 rounded-lg text-red-700 bg-red-50 hover:bg-red-100 font-bold flex items-center gap-1 whitespace-nowrap">
           <span>📋</span> Enviar Receita Médica (Antibióticos e Tarjados)
@@ -507,7 +507,7 @@
     // ==============================================
     // CONFIGURAÇÃO OFICIAL DA PLANILHA GOOGLE VITTALIS
     // ==============================================
-    const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR00o-YZ1ug62utcKoooD7NyBx-urpCDREyIq4A8exWL1An4i7ZXXhV1HMLgY5_Ig/pub?output=csv";
+    const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTGjW6irzo4AtSKIGSDRJ4bIOedq1ChoFhHDZ8DhVbrRPlpISmMunG6n9xm1q-aTxNQXTiCk9K6MIvL/pub?output=csv";
 
     // CATÁLOGO COMPLETO DE SEGURANÇA (30 ITENS OFICIAIS)
     const DEFAULT_CATALOG = [
@@ -547,7 +547,10 @@
     let storedCatalog = null;
     try {
       const rawStored = localStorage.getItem('vittalis_live_catalog');
-      if (rawStored) storedCatalog = JSON.parse(rawStored);
+      if (rawStored) {
+        const parsed = JSON.parse(rawStored);
+        if (parsed && parsed.length >= 10) storedCatalog = parsed;
+      }
     } catch(e) {}
 
     let CATALOG = (storedCatalog && storedCatalog.length > 0) ? storedCatalog : [...DEFAULT_CATALOG];
@@ -566,7 +569,18 @@
       if (currentDept === 'ofertas') {
         items = items.filter(i => (i.oldPrice && i.oldPrice > i.price) || i.highlight);
       } else if (currentDept !== 'todos') {
-        items = items.filter(i => i.category === currentDept);
+        items = items.filter(i => {
+          const cat = (i.category || '').toLowerCase();
+          const target = currentDept.toLowerCase();
+          if (cat === target) return true;
+          if ((target.includes('cuidados') || target.includes('geriat') || target.includes('higiene')) && (cat.includes('cuidados') || cat.includes('geriat') || cat.includes('higiene'))) return true;
+          if (target.includes('infantil') && (cat.includes('infantil') || cat.includes('beb') || cat.includes('mam'))) return true;
+          if ((target.includes('suplemento') || target.includes('vitamina')) && (cat.includes('suplem') || cat.includes('vitam'))) return true;
+          if (target.includes('medicamento') && (cat.includes('medica') || cat.includes('remed'))) return true;
+          if (target.includes('socorro') && (cat.includes('socorr') || cat.includes('curat'))) return true;
+          if (target.includes('dermo') && (cat.includes('dermo') || cat.includes('aparelh') || cat.includes('equip'))) return true;
+          return cat.includes(target);
+        });
       }
 
       // Filtro por busca
